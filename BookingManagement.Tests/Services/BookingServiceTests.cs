@@ -268,5 +268,46 @@ namespace BookingManagement.Tests.Services
             Assert.Single(result);
             Assert.Equal("Room-101", result.First().ResourceId);
         }
+
+        [Fact]
+        public async Task GetBookingsByFilterAsync_ShouldReturnBooking_WhenBookingOverlapsSearchRange()
+        {
+            // Arrange
+            var filter = new BookingFilterRequest
+            {
+                ResourceId = "Room-101",
+                From = new DateTime(2026, 7, 5, 10, 0, 0),
+                To = new DateTime(2026, 7, 5, 12, 0, 0)
+            };
+
+            var bookings = new List<Booking>
+    {
+        new Booking
+        {
+            Id = Guid.NewGuid(),
+            ResourceId = "Room-101",
+            UserId = "Mohammad",
+            StartDateTime = new DateTime(2026, 7, 5, 9, 0, 0),
+            EndDateTime = new DateTime(2026, 7, 5, 11, 0, 0),
+            Status = BookingStatus.Active,
+            CreatedAt = DateTime.UtcNow,
+            RowVersion = new byte[] { 1 }
+        }
+    };
+
+            _bookingRepositoryMock
+                .Setup(x => x.GetBookingsByFilterAsync(
+                    filter.ResourceId,
+                    filter.From,
+                    filter.To))
+                .ReturnsAsync(bookings);
+
+            // Act
+            var result = await _bookingService.GetBookingsByFilterAsync(filter);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("Room-101", result.First().ResourceId);
+        }
     }
 }

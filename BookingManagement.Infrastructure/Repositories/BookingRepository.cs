@@ -69,11 +69,20 @@ namespace BookingManagement.Infrastructure.Repositories
 
             query = query.Where(x => x.ResourceId == resourceId);
 
-            if (startDateTime.HasValue)
-                query = query.Where(x => x.StartDateTime >= startDateTime.Value);
+            if (startDateTime.HasValue && endDateTime.HasValue)
+            {
+                query = query.Where(x =>
+                    x.StartDateTime < endDateTime.Value &&
+                    x.EndDateTime > startDateTime.Value);
+            }
+            else
+            {
+                if (startDateTime.HasValue)
+                    query = query.Where(x => x.EndDateTime > startDateTime.Value);
 
-            if (endDateTime.HasValue)
-                query = query.Where(x => x.EndDateTime <= endDateTime.Value);
+                if (endDateTime.HasValue)
+                    query = query.Where(x => x.StartDateTime < endDateTime.Value);
+            }
 
             return await query
                 .OrderBy(x => x.StartDateTime)
